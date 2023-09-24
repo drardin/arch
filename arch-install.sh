@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# User-defined variables
-target_device="/dev/vda"         # Target device
-partition_size="+200G"           # Size of the primary partition
-rootvol_size="100%"              # Size of the root logical volume (100%FREE)
+# Prompt user to set variables
+read -p "Enter the target device (e.g., /dev/vda): " target_device
+read -p "Enter the size of the primary partition (e.g., +200G): " partition_size
+read -p "Enter the size of the root logical volume (e.g., 100%FREE): " rootvol_size
 
 # Create boot/EFI partition
 fdisk "$target_device" <<EOF
