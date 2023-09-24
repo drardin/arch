@@ -68,7 +68,7 @@ echo -e '1\n' | pacman -S linux linux-headers linux-lts linux-lts-headers
 echo -e '1\n' | pacman -S base-devel openssh sudo nano vi networkmanager wpa_supplicant wireless_tools netctl dialog gzip which
 systemctl enable NetworkManager
 systemctl enable sshd
-pacman -S lvm2
+pacman -Sy lvm2
 mkinitcpio_conf="/etc/mkinitcpio.conf"
 if [ -f "$mkinitcpio_conf" ]; then
     # Search for the first uncommented HOOKS line and modify it
