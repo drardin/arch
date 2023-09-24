@@ -46,3 +46,70 @@ vgscan
 
 # Activate volume group
 vgchange -ay
+
+# DISK FORMATTING
+mkfs.fat -F32 "$target_device"1
+mkfs.ext4 /dev/lvg0/rootvol
+mkfs.ext4 /dev/lvg0/homevol
+
+# MOUNTING TARGET FILESYSTEM
+mount /dev/lvg0/rootvol /mnt
+mkdir /mnt/home
+mount /dev/lvg0/homevol /mnt/home
+
+# GENERATE FSTAB FILE
+mkdir /mnt/etc
+genfstab -U -p /mnt >> /mnt/etc/fstab
+
+# MAIN INSTALL
+pacstrap /mnt
+arch-chroot /mnt
+pacman -S linux linux-headers linux-lts linux-lts-headers
+pacman -S base-devel openssh sudo nano vi networkmanager wpa_supplicant wireless_tools netctl dialog gzip which
+systemctl enable NetworkManager
+systemctl enable sshd
+pacman -S lvm2
+mkinitcpio_conf="/etc/mkinitcpio.conf"
+if [ -f "$mkinitcpio_conf" ]; then
+    # Search for the first uncommented HOOKS line and modify it
+    sed -i '/^HOOKS=/ s/^\(#*\)HOOKS=(.*$/HOOKS=\2 lvm2/' "$mkinitcpio_conf"
+    echo "Modified $mkinitcpio_conf to include the 'lvm2' hook."
+else
+    echo "Error: $mkinitcpio_conf not found."
+fi
+mkinitcpio -p linux
+mkinitcpio -p linux-lts
+locale_to_allow="en_US.UTF-8 UTF-8"
+if grep -q "^# *$locale_to_allow" "/etc/locale.gen"; then
+    sed -i "s/^# *$locale_to_allow/$locale_to_uncomment/" "/etc/locale.gen"
+    echo "Uncommented $locale_to_allow in /etc/locale.gen"
+else
+    echo "The locale $locale_to_allow is already uncommented or not found in /etc/locale.gen"
+fi
+locale-gen
+
+# SET ROOT USER PASSWORD
+read -s -p "Enter the root user's password: " root_password
+echo
+echo "root:$root_password" | chpasswd
+
+# SET USER'S NAME AND PASSWORD
+read -p "Enter the username for the admin user: " admin_username
+read -s -p "Enter the password for the admin user: " admin_password
+echo
+useradd -m "$admin_username"
+echo "$admin_username:$admin_password" | chpasswd
+
+# SET USER'S GROUPS
+useradd -m -g users -G wheel $admin_username
+
+if grep -q "$admin_username" /etc/sudoers; then
+    echo "User $admin_username is already in the sudoers file."
+else
+    # Add the user to the sudoers file
+    echo "$admin_username ALL=(ALL) ALL" | tee -a /etc/sudoers
+    echo "User $admin_username added to the sudoers file."
+fi
+
+# DISABLE ROOT USER
+usermod -L root
