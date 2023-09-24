@@ -4,6 +4,7 @@
 fdisk -l
 
 # Prompt user to set variables
+echo ""
 read -p "Enter the target device (e.g., /dev/vda): " target_device
 read -p "Enter the size of the root logical volume (e.g., +10G): " rootvol_size
 
@@ -16,7 +17,6 @@ sed -e 's/\s*\([\+0-9a-zA-Z]*\).*/\1/' <<EOF | fdisk "$target_device"
   +512M  # Set the partition size to 512MB
   t  # Change partition type
   uefi  # Set it as EFI System
-  w  # Write changes and exit
   n  # Create a new partition
   2  # Partition number 2
      # Accept the default first sector
