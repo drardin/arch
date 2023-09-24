@@ -63,9 +63,9 @@ genfstab -U -p /mnt >> /mnt/etc/fstab
 
 # MAIN INSTALL
 pacstrap /mnt
-arch-chroot /mnt
-pacman -S linux linux-headers linux-lts linux-lts-headers
-pacman -S base-devel openssh sudo nano vi networkmanager wpa_supplicant wireless_tools netctl dialog gzip which
+arch-chroot /mnt /bin/bash <<EOF
+echo -e '1\n' | pacman -S linux linux-headers linux-lts linux-lts-headers
+echo -e '1\n' | pacman -S base-devel openssh sudo nano vi networkmanager wpa_supplicant wireless_tools netctl dialog gzip which
 systemctl enable NetworkManager
 systemctl enable sshd
 pacman -S lvm2
@@ -113,3 +113,4 @@ fi
 
 # DISABLE ROOT USER
 usermod -L root
+EOF
