@@ -69,14 +69,7 @@ echo -e '1\n' | pacman -S base-devel openssh sudo nano vi networkmanager wpa_sup
 systemctl enable NetworkManager
 systemctl enable sshd
 pacman -Sy lvm2
-mkinitcpio_conf="/etc/mkinitcpio.conf"
-if [ -f "$mkinitcpio_conf" ]; then
-    # Search for the first uncommented HOOKS line and modify it
-    sed -i '/^HOOKS=/ s/^\(#*\)HOOKS=(.*$/HOOKS=\2 lvm2/' "$mkinitcpio_conf"
-    echo "Modified $mkinitcpio_conf to include the 'lvm2' hook."
-else
-    echo "Error: $mkinitcpio_conf not found."
-fi
+sed -i '/^HOOKS=/ s/^\(#*\)HOOKS=(.*$/HOOKS=\2 lvm2/' "/etc/mkinitcpio.conf"
 mkinitcpio -p linux
 mkinitcpio -p linux-lts
 locale_to_allow="en_US.UTF-8 UTF-8"
