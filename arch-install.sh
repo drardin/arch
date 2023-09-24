@@ -28,6 +28,9 @@ sed -e 's/\s*\([\+0-9a-zA-Z]*\).*/\1/' <<EOF | fdisk "$target_device"
   w  # Write changes and exit
 EOF
 
+echo "Line 31: Press Enter to continue..."
+read
+
 # Set up LVM
 pvcreate --dataalignment 1m "$target_device"2
 
@@ -52,26 +55,54 @@ mkfs.fat -F32 "$target_device"1
 mkfs.ext4 /dev/lvg0/rootvol
 mkfs.ext4 /dev/lvg0/homevol
 
+echo "Line 58: Press Enter to continue..."
+read
+
 # MOUNTING TARGET FILESYSTEM
 mount /dev/lvg0/rootvol /mnt
 mkdir /mnt/home
 mount /dev/lvg0/homevol /mnt/home
 
+echo "Line 66: Press Enter to continue..."
+read
+
 # GENERATE FSTAB FILE
 mkdir /mnt/etc
 genfstab -U -p /mnt >> /mnt/etc/fstab
 
+echo "Line 73: Press Enter to continue..."
+read
+
 # MAIN INSTALL
 pacstrap /mnt
+
+echo "Line 79: Press Enter to continue..."
+read
+
 arch-chroot /mnt /bin/bash <<EOF
-echo -e '1\n' | pacman -S linux linux-headers linux-lts linux-lts-headers
-echo -e '1\n' | pacman -S base-devel openssh sudo nano vi networkmanager wpa_supplicant wireless_tools netctl dialog gzip which
+echo -e '1\n' | pacman -Sy linux linux-headers linux-lts linux-lts-headers
+
+echo "Line 85: Press Enter to continue..."
+read
+
+echo -e '1\n' | pacman -Sy base-devel openssh sudo nano vi networkmanager wpa_supplicant wireless_tools netctl dialog gzip which lvm2
+
+echo "Line 90: Press Enter to continue..."
+read
+
 systemctl enable NetworkManager
 systemctl enable sshd
-pacman -Sy lvm2
+
+echo "Line 96: Press Enter to continue..."
+read
+
 sed -i '/^HOOKS=/ s/^\(#*\)HOOKS=(.*$/HOOKS=\2 lvm2/' "/etc/mkinitcpio.conf"
 mkinitcpio -p linux
 mkinitcpio -p linux-lts
+
+echo "Line 103: Press Enter to continue..."
+read
+
 locale_to_allow="en_US.UTF-8 UTF-8"
 if grep -q "^# *$locale_to_allow" "/etc/locale.gen"; then
     sed -i "s/^# *$locale_to_allow/$locale_to_uncomment/" "/etc/locale.gen"
@@ -79,6 +110,10 @@ if grep -q "^# *$locale_to_allow" "/etc/locale.gen"; then
 else
     echo "The locale $locale_to_allow is already uncommented or not found in /etc/locale.gen"
 fi
+
+echo "Line 114: Press Enter to continue..."
+read
+
 locale-gen
 
 # SET ROOT USER PASSWORD
