@@ -242,13 +242,13 @@ if [ "$selected_desktop_environment" = "gnome" ]; then
     pacman -S --noconfirm gnome gnome-tweaks
     systemctl enable gdm
 elif [ "$selected_desktop_environment" = "kde" ]; then
-    pacman -S --noconfirm plasma-meta kde-applications
+    pacman -S --noconfirm plasma-meta kde-applications sddm
     systemctl enable sddm
 elif [ "$selected_desktop_environment" = "xfce" ]; then
-    pacman -S --noconfirm xfce4 xfce4-goodies
+    pacman -S --noconfirm xfce4 xfce4-goodies lightdm
     systemctl enable lightdm
 elif [ "$selected_desktop_environment" = "mate" ]; then
-    pacman -S --noconfirm mate mate-extra
+    pacman -S --noconfirm mate mate-extra lightdm
     systemctl enable lightdm
 fi
 
