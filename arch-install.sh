@@ -1,4 +1,37 @@
 #!/bin/bash
+echo "!!!WARNING!!! - This script can be destructive to connected drives"
+
+# SET ROOT USER AND ADMIN USER
+#ROOT USER
+while true; do
+    read -s -p "Set password for ROOT: " root_password
+    echo
+    read -s -p "Confirm the password: " root_confirm_password
+    echo
+    if [ "$root_password" = "$root_confirm_password" ]; then
+        break
+    else
+        echo "Passwords do not match. Please try again."
+    fi
+done
+#ADMIN USER
+read -p "Enter the username for the admin user: " admin_username
+echo
+
+while true; do
+    read -s -p "Enter the password for the $admin_username: " admin_password
+    echo
+    read -s -p "Confirm the password: " admin_confirm_password
+    echo
+    if [ "$admin_password" = "$admin_confirm_password" ]; then
+        break
+    else
+        echo "Passwords do not match. Please try again."
+    fi
+done
+
+#SET HOSTNAME VARIABLE
+read -p "Enter a hostname: " hostname
 
 # List available devices
 fdisk -l
@@ -28,9 +61,6 @@ sed -e 's/\s*\([\+0-9a-zA-Z]*\).*/\1/' <<EOF | fdisk "$target_device"
   w  # Write changes and exit
 EOF
 
-echo "Line 31: Press Enter to continue..."
-read
-
 # Set up LVM
 pvcreate --dataalignment 1m "$target_device"2
 
@@ -55,47 +85,19 @@ mkfs.fat -F32 "$target_device"1
 mkfs.ext4 /dev/lvg0/rootvol
 mkfs.ext4 /dev/lvg0/homevol
 
-echo "Line 58: Press Enter to continue..."
-read
-
 # MOUNTING TARGET FILESYSTEM
 mount /dev/lvg0/rootvol /mnt
 mkdir /mnt/home
 mount /dev/lvg0/homevol /mnt/home
 
-echo "Line 66: Press Enter to continue..."
-read
-
 # GENERATE FSTAB FILE
 mkdir /mnt/etc
 genfstab -U -p /mnt >> /mnt/etc/fstab
 
-echo "Line 73: Press Enter to continue..."
-read
-
 # MAIN INSTALL
 pacstrap /mnt
 
-echo "Line 79: Press Enter to continue..."
-read
-
-read -s -p "Enter a password to set for root user: " root_password
-read -p "Enter the username for the admin user: " admin_username
-
-while true; do
-    read -s -p "Enter the password for the admin user: " admin_password
-    echo
-    read -s -p "Confirm the password: " confirm_password
-    echo
-    if [ "$admin_password" = "$confirm_password" ]; then
-        break
-    else
-        echo "Passwords do not match. Please try again."
-    fi
-done
-
-read -p "Enter a hostname: " hostname
-
+# SETUP INSTALL ENVIRONMENT
 arch-chroot /mnt /bin/bash <<EOF
 echo -e '1\n' | pacman -Sy linux linux-headers linux-lts linux-lts-headers
 echo -e '1\n' | pacman -Sy base-devel openssh sudo nano vi networkmanager wpa_supplicant wireless_tools netctl dialog gzip which lvm2
