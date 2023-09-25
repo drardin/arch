@@ -94,6 +94,7 @@ while true; do
     fi
 done
 
+read -p "Enter a hostname: " hostname
 
 arch-chroot /mnt /bin/bash <<EOF
 echo -e '1\n' | pacman -Sy linux linux-headers linux-lts linux-lts-headers
@@ -127,4 +128,28 @@ echo "$admin_username ALL=(ALL) ALL" | tee -a /etc/sudoers
 
 # DISABLE ROOT USER
 usermod -L root
+
+#BOOTLOADER CONFIGURATION
+pacman -Sy grub dosfstools os-prober mtools efibootmgr
+mkdir /boot/efi
+mount "$target_device"1 /boot/efi
+grub-install --target=x86_64-efi --bootloader-id=UEFI --recheck
+cp /usr/share/locale/en\@quot/LC_MESSAGES/grub.mo /boot/grub/locale/en.mo
+grub-mkconfig -o /boot/grub/grub.cfg
+
+#SETTING DATE AND TIME
+timedatectl set-timezone America/Dallas
+systemctl enable systemd-timesyncd
+hostnamectl set-hostname $hostname
+echo "127.0.0.1 localhost" | tee -a /etc/hosts
+echo "::1 localhost ip6-localhost ip6-loopback" | tee -a /etc/hosts
+echo "127.0.0.1 $hostname" | tee -a /etc/hosts
+
+#INSTALLING MICROCODE AND DESKTOP ENVIRONMENT
+pacman -Sy amd-ucode
+pacman -Sy wayland
+pacman -Sy virtualbox-guest-utils xf86-video-vmware systemctl enable vboxservice
+pacman -Sy gnome gnome-tweaks
+systemctl enable gdm
 EOF
+reboot now
