@@ -79,29 +79,30 @@ pacstrap /mnt
 echo "Line 79: Press Enter to continue..."
 read
 
+read -s -p "Enter a password to set for root user: " root_password
+read -p "Enter the username for the admin user: " admin_username
+
+while true; do
+    read -s -p "Enter the password for the admin user: " admin_password
+    echo
+    read -s -p "Confirm the password: " confirm_password
+    echo
+    if [ "$admin_password" = "$confirm_password" ]; then
+        break
+    else
+        echo "Passwords do not match. Please try again."
+    fi
+done
+
+
 arch-chroot /mnt /bin/bash <<EOF
 echo -e '1\n' | pacman -Sy linux linux-headers linux-lts linux-lts-headers
-
-echo "Line 85: Press Enter to continue..."
-read
-
 echo -e '1\n' | pacman -Sy base-devel openssh sudo nano vi networkmanager wpa_supplicant wireless_tools netctl dialog gzip which lvm2
-
-echo "Line 90: Press Enter to continue..."
-read
-
 systemctl enable NetworkManager
 systemctl enable sshd
-
-echo "Line 96: Press Enter to continue..."
-read
-
-sed -i '/^HOOKS=/ s/^\(#*\)HOOKS=(.*$/HOOKS=\2 lvm2/' "/etc/mkinitcpio.conf"
+sed -i '/^HOOKS=/ s/\(.*\))/\1 lvm2)/' /etc/mkinitcpio.conf
 mkinitcpio -p linux
 mkinitcpio -p linux-lts
-
-echo "Line 103: Press Enter to continue..."
-read
 
 locale_to_allow="en_US.UTF-8 UTF-8"
 if grep -q "^# *$locale_to_allow" "/etc/locale.gen"; then
@@ -110,34 +111,19 @@ if grep -q "^# *$locale_to_allow" "/etc/locale.gen"; then
 else
     echo "The locale $locale_to_allow is already uncommented or not found in /etc/locale.gen"
 fi
-
-echo "Line 114: Press Enter to continue..."
-read
-
 locale-gen
 
 # SET ROOT USER PASSWORD
-read -s -p "Enter the root user's password: " root_password
-echo
 echo "root:$root_password" | chpasswd
 
 # SET USER'S NAME AND PASSWORD
-read -p "Enter the username for the admin user: " admin_username
-read -s -p "Enter the password for the admin user: " admin_password
-echo
 useradd -m "$admin_username"
 echo "$admin_username:$admin_password" | chpasswd
 
-# SET USER'S GROUPS
+# SET USER'S GROUPS AND ADD TO SUDOERS FILE
 useradd -m -g users -G wheel $admin_username
+echo "$admin_username ALL=(ALL) ALL" | tee -a /etc/sudoers
 
-if grep -q "$admin_username" /etc/sudoers; then
-    echo "User $admin_username is already in the sudoers file."
-else
-    # Add the user to the sudoers file
-    echo "$admin_username ALL=(ALL) ALL" | tee -a /etc/sudoers
-    echo "User $admin_username added to the sudoers file."
-fi
 
 # DISABLE ROOT USER
 usermod -L root
