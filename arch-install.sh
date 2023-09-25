@@ -256,6 +256,7 @@ fi
 systemctl enable systemd-timesyncd
 systemctl enable NetworkManager
 systemctl enable sshd
+systemctl enable vboxservice
 
 # DISABLE ROOT USER
 usermod -L root
