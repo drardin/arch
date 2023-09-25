@@ -99,8 +99,8 @@ pacstrap /mnt
 
 # SETUP INSTALL ENVIRONMENT
 arch-chroot /mnt /bin/bash <<EOF
-echo -e '1\n' | pacman -Sy linux linux-headers linux-lts linux-lts-headers
-echo -e '1\n' | pacman -Sy base-devel openssh sudo nano vi networkmanager wpa_supplicant wireless_tools netctl dialog gzip which lvm2
+echo -e '1\n' | pacman -S --noconfirm linux linux-headers linux-lts linux-lts-headers
+echo -e '1\n' | pacman -S --noconfirm base-devel openssh sudo nano vi networkmanager wpa_supplicant wireless_tools netctl dialog gzip which lvm2
 systemctl enable NetworkManager
 systemctl enable sshd
 sed -i '/^HOOKS=/ s/\(.*\))/\1 lvm2)/' /etc/mkinitcpio.conf
@@ -127,12 +127,8 @@ echo "$admin_username:$admin_password" | chpasswd
 useradd -m -g users -G wheel $admin_username
 echo "$admin_username ALL=(ALL) ALL" | tee -a /etc/sudoers
 
-
-# DISABLE ROOT USER
-usermod -L root
-
 #BOOTLOADER CONFIGURATION
-pacman -Sy grub dosfstools os-prober mtools efibootmgr
+pacman -S --noconfirm grub dosfstools os-prober mtools efibootmgr
 mkdir /boot/efi
 mount "$target_device"1 /boot/efi
 grub-install --target=x86_64-efi --bootloader-id=UEFI --recheck
@@ -148,10 +144,13 @@ echo "::1 localhost ip6-localhost ip6-loopback" | tee -a /etc/hosts
 echo "127.0.0.1 $hostname" | tee -a /etc/hosts
 
 #INSTALLING MICROCODE AND DESKTOP ENVIRONMENT
-pacman -Sy amd-ucode
-pacman -Sy wayland
-pacman -Sy virtualbox-guest-utils xf86-video-vmware systemctl enable vboxservice
-pacman -Sy gnome gnome-tweaks
+pacman -S --noconfirm amd-ucode
+pacman -S --noconfirm wayland
+pacman -S --noconfirm virtualbox-guest-utils xf86-video-vmware systemctl enable vboxservice
+pacman -S --noconfirm gnome gnome-tweaks
 systemctl enable gdm
+
+# DISABLE ROOT USER
+usermod -L root
 EOF
 reboot now
