@@ -102,23 +102,15 @@ selected_desktop_environment=""
 case "$desktop_environment" in
     "gnome")
         selected_desktop_environment="gnome"
-        pacman -S --noconfirm gnome gnome-tweaks
-        systemctl enable gdm
         ;;
     "kde")
         selected_desktop_environment="kde"
-        pacman -S --noconfirm plasma-meta kde-applications
-        systemctl enable sddm
         ;;
     "xfce")
         selected_desktop_environment="xfce"
-        pacman -S --noconfirm xfce4 xfce4-goodies
-        systemctl enable lightdm
         ;;
     "mate")
         selected_desktop_environment="mate"
-        pacman -S --noconfirm mate mate-extra
-        systemctl enable lightdm
         ;;
     *)
         echo "Invalid selection. Please choose 'Gnome', 'KDE', 'XFCE', or 'Mate'."
